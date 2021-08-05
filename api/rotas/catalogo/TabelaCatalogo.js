@@ -1,4 +1,5 @@
 const Modelo = require('./ModeloTabelaCatalogo')
+const NaoEncontrado = require('../../erros/NaoEncontrado')
 
 module.exports = {
     listar () {
@@ -14,9 +15,22 @@ module.exports = {
             }
         })
         if(!videoEncontrado) {
-            throw new Error('Video não encontrado')
+            throw new NaoEncontrado('Video não encontrado')
         }
 
         return videoEncontrado
+    },
+    atualizar (id, dadosParaAtualizar) {
+        return Modelo.update(
+            dadosParaAtualizar,
+            {
+                where: { id: id }
+            }
+        )
+    },
+    remover (id) {
+        return Modelo.destroy({
+            where: { id: id }
+        })
     }
 }

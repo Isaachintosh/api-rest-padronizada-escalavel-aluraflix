@@ -1,4 +1,6 @@
 const TabelaCatalogo = require('./TabelaCatalogo')
+const CampoInvalido = require('../../erros/CampoInvalido')
+const DadosNaoFornecidos = require('../../erros/DadosNaoFornecidos')
 
 class Catalogo {
     constructor ({ id, titulo, descricao, url, categoria, dataCriacao, dataAtualizacao, versao }) {
@@ -14,6 +16,7 @@ class Catalogo {
     }
 
     async criar () {
+        this.validar()
         const resultado = await TabelaCatalogo.inserir({
             titulo: this.titulo,
             descricao: this.descricao,
@@ -35,6 +38,42 @@ class Catalogo {
         this.dataCriacao = videoEncontrado.dataCriacao
         this.dataAtualizacao = videoEncontrado.dataAtualizacao
         this.versao = videoEncontrado.versao
+    }
+
+    async atualizar () {
+        const videoEncontrado = await TabelaCatalogo.pegarPorId(this.id)
+        const campos = ['titulo', 'descricao', 'url', 'categoria']
+        const dadosParaAtualizar = {}
+
+        campos.forEach((campo) => {
+            const valor = this[campo]
+                        
+            if(typeof valor === 'string' && valor.length > 0) {
+                dadosParaAtualizar[campo] = valor
+            }
+        })
+
+        if(Object.keys(dadosParaAtualizar).length === 0) {
+            throw new DadosNaoFornecidos()
+        }
+
+        await TabelaCatalogo.atualizar(this.id, dadosParaAtualizar)
+    }
+
+    remover () {
+        return TabelaCatalogo.remover(this.id)
+    }
+
+    validar () {
+        const campos = ['titulo', 'descricao', 'url', 'categoria']
+
+        campos.forEach(campo => {
+            const valor = this[campo]
+            
+            if (typeof valor !== 'string' || valor.length === 0){
+                throw new CampoInvalido(campo)
+            }
+        })
     }
 }
 
